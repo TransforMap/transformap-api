@@ -3,7 +3,6 @@ const __ = CONFIG.universalPath
 const _ = __.require('lib', 'utils')
 const things = require('./things/things')
 const root = require('./root/root')
-const passport = require('passport')
 const _passport = require('./../middlewares/passport')
 
 const routes = {
@@ -14,21 +13,40 @@ const routes = {
     }
   },
   'secretPage': {
-    get: function (req, res, next) {
-      res.json({ hello: "foo" })
-    }
+    get: [
+      ensureAuthenticated,
+      function(req, res, next) {
+        res.json({ userId: req.session.passport.user })
+      }
+    ]
   },
   'auth/gitlab': {
     get: _passport.authentikate
   },
   'auth/gitlab/callback': {
-    get: _passport.authentikate
+    get: [
+      _passport.authentikate,
+      function(req, res, next) {
+        _passport.successRedirect(req, res, next)
+      }
+    ]
+  },
+  'auth/logout': {
+    get: function(req, res, next) {
+      console.log('logging out')
+      req.session.regenerate(function(){
+        req.logout()
+        res.redirect('/hello')
+      })
+    }
   }
 }
-
-
 
 _.extend(routes, things.generateRoutes())
 _.extend(routes, root.generateHypermedia(routes))
 
 module.exports = _.log(routes, 'routes')
+
+function ensureAuthenticated(req, res, next) {
+  req.session.passport ? next() : res.redirect('auth/gitlab')
+}
