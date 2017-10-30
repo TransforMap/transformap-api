@@ -25,11 +25,14 @@ module.exports = function (typeName) {
       }
     },
     post: function (req, res) {
-      lib.create(req.body)
-      .then(res.json.bind(res))
-      .catch(error_.Handler(res))
+
+        lib.create(req.body)
+        .then(res.json.bind(res))
+        .catch(error_.Handler(res))
+
     },
     put: function (req, res) {
+
       const id = req.params.id
 
       if (!_.isUuid(id)) {
@@ -37,11 +40,19 @@ module.exports = function (typeName) {
         return
       }
 
-      lib.update(req.body, id)
-      .then(res.json.bind(res))
-      .catch(error_.Handler(res))
+      if (!req.files) {
+        lib.update(req.body, id)
+        .then(res.json.bind(res))
+        .catch(error_.Handler(res))
+      } else {
+        lib.upload(req.body, req.files.mediaUpload, id) // hard coded <input id="mediaUpload" />; configurable, or per type?
+        .then(res.json.bind(res))
+        .catch(error_.Handler(res))
+    }
+
     },
     delete: function (req, res) {
+
       const id = req.params.id
 
       if (!_.isUuid(id)) {
@@ -52,6 +63,7 @@ module.exports = function (typeName) {
       lib.delete(id)
       .then(res.json.bind(res))
       .catch(error_.Handler(res))
+
     }
   }
 }

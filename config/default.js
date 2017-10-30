@@ -20,5 +20,14 @@ module.exports = {
     url: function () {
       return `${this.scheme}://${this.username}:${this.password}@${this.host}:${this.port}`
     }
+  },
+  blobStore: {
+    transport: 'ip4',
+    address: '127.0.0.1',
+    protocol: 'tcp',
+    port: 5001,
+    multiaddr: function () {
+      return `/${this.transport}/${this.addr}/${this.proto}/${this.port}`
+    }
   }
 }
